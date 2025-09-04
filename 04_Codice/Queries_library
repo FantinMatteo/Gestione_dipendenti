@@ -1,0 +1,229 @@
+# ---LIBRERIA_QUERIES---
+
+# 01_CREARE TABELLE RELAZIONALI
+
+#Creare una tabella per i DIPENDENTI
+CREATE TABLE Dipendenti (
+    IDDip CHAR (3) PRIMARY KEY,
+    Nome VARCHAR (50) NOT NULL,
+    Sede CHAR (2) REFERENCES Sedi,
+    Ruolo VARCHAR (50)
+    );
+
+#Creare tabella per SEDI
+CREATE TABLE Sedi (
+    IDSed CHAR (2) PRIMARY KEY,
+    Nome VARCHAR (50)
+    );
+
+#Creare tabella per ORE
+
+CREATE TABLE tabella_ore (
+    Op INT NOT NULL,
+    IDRen VARCHAR(255) NOT NULL,
+    IDDip CHAR (3) REFERENCES dipendenti (IDDip),
+    Mese DATE NOT NULL,
+    OreLavorate DECIMAL(10,2) NOT NULL,
+    TipoOra VARCHAR(255),
+    PRIMARY KEY (Op, IDRen)
+);
+
+#02_QUERIES
+
+#CHIAMARE
+
+#Chiamare tutti i dati della tabella
+        SELECT * FROM tabella_ore  
+
+#RIASSUMERE
+
+#Riassunto ore annuali (es. 2024)
+SELECT SUM(OreLavorate) AS OreTotaliAnno
+FROM tabella_ore
+WHERE YEAR (Mese) = 2024
+
+#Riassunto ore mensili (esempio marzo)
+SELECT SUM(OreLavorate) AS OreTotaliMese
+FROM tabella_ore
+WHERE MONTH (Mese) = 3
+
+#Riassunto ore annuali per Dipendente (esempio Matteo, 2024)
+SELECT
+    SUM(OreLavorate) AS OreDipendenteAnno
+FROM tabella_ore T
+JOIN dipendenti D ON T.IDDip = D.IDDip
+WHERE
+    D.Nome = 'Matteo'
+    AND YEAR (t.Mese) = '2024'
+
+#Riassunto ore mensili per Dipendente (esempio Matteo, 2024, ottobre)
+SELECT
+    SUM(OreLavorate) AS OreDipendenteMese
+FROM tabella_ore T
+JOIN dipendenti D ON T.IDDip = D.IDDip
+WHERE
+    D.Nome = 'Matteo'
+    AND YEAR (t.Mese) = '2024'
+    AND MONTH (t.Mese) = 10
+
+#Riassunto TipoOre annuali per Dipendente (esempio Sofia, 2024, Ferie)
+SELECT
+    SUM(OreLavorate) AS OreDipendenteCategoriaAnno
+FROM tabella_ore T
+JOIN dipendenti D ON T.IDDip = D.IDDip
+WHERE
+    D.Nome = 'Sofia'
+    AND YEAR (t.Mese) = '2024'
+    AND T.TipoOra = 'Ferie'	
+
+#Riassunto TipoOre mensili per Dipendente (esempio Alessandro, 2024, Settembre, Permesso)
+SELECT
+    SUM(OreLavorate) AS OreDipendenteCategoriaMese
+FROM tabella_ore T
+JOIN dipendenti D ON T.IDDip = D.IDDip
+WHERE
+    D.Nome = 'Alessandro'
+    AND YEAR (t.Mese) = '2024'
+    AND MONTH (t.Mese) = 9
+    AND T.TipoOra = 'Permesso'
+
+#CLASSIFICARE 
+
+#Classifica Ore annuali per dipendente
+SELECT
+    D.Nome,
+    SUM(T.OreLavorate) AS OreTotaliClassifica
+FROM tabella_ore T
+JOIN dipendenti D ON T.IDDip = D.IDDip
+GROUP BY
+    D.Nome
+ORDER BY
+    OreTotaliClassifica DESC;
+
+#Classifica Ore annuali per dipendente per categoria (esempio 2024, Serale)
+SELECT
+    D.Nome,
+    SUM(T.OreLavorate) AS OreTotaliClassificaCategoria
+FROM tabella_ore T
+JOIN dipendenti D ON T.IDDip = D.IDDip
+WHERE T.TipoOra = 'Serale'
+GROUP BY
+    D.Nome
+ORDER BY
+    OreTotaliClassificaCategoria DESC;
+
+#Classifica Ore annuali per dipendente escludendo categorie (esempio Ferie, Permesso, Malattia)
+SELECT
+    D.Nome,
+    SUM(T.OreLavorate) AS OreTotaliEscludenti
+FROM tabella_ore T
+JOIN dipendenti D ON T.IDDip = D.IDDip
+WHERE
+    T.TipoOra <> 'Ferie' AND T.TipoOra <> 'Permesso' AND T.TipoOra <> 'Malattia' AND YEAR (Mese) = '2024'
+GROUP BY
+    D.Nome
+ORDER BY
+    OreTotaliEscludenti DESC;
+
+#Classifica Ore annuali per TipoOra 
+SELECT
+    TipoOra,
+    SUM(OreLavorate) AS OreTotaliTipo
+FROM
+    tabella_ore T
+WHERE YEAR (Mese) = 2024
+GROUP BY
+    TipoOra
+ORDER BY
+    OreTotaliTipo DESC
+
+#Classifica Ore annuali per TipoOra (escludendo Ordinaria)
+SELECT
+    TipoOra,
+    SUM(OreLavorate) AS OreTotaliTipoEscludenti
+FROM
+    tabella_ore T
+WHERE T.TipoOra <> 'Ordinaria' AND YEAR (Mese) = 2024
+GROUP BY
+    TipoOra
+ORDER BY
+    OreTotaliTipoEscludenti DESC
+
+#Raggruppare per insiemi di TipoOre (esempio Ferie, Permesso, Malattia)
+SELECT
+    D.Nome,
+    D.Ruolo,
+    YEAR (T.Mese),
+    SUM(T.OreLavorate) AS OreExtra,
+    T.TipoOra
+FROM
+    tabella_ore T
+JOIN
+    dipendenti D ON T.IDDip = D.IDDip
+WHERE
+    T.TipoOra IN ('Ferie', 'Permesso', 'Malattia')
+GROUP BY
+    D.Nome, D.Ruolo, YEAR (T.Mese), T.TipoOra
+ORDER BY
+    D.Nome ASC
+
+#Classificare per Media ore per dipendente
+SELECT
+    D.Nome,
+    AVG(T.OreLavorate) AS MediaOreLavorate
+FROM tabella_ore T
+JOIN dipendenti D
+    ON T.IDDip = D.IDDip
+GROUP BY
+    D.Nome
+ORDER BY
+    MediaOreLavorate DESC;
+
+#Confrontare (OreOrdinarie e OreExtra per dipendente)
+SELECT
+    D.Nome,
+    SUM(CASE WHEN T.TipoOra = 'Ordinaria' THEN T.OreLavorate ELSE 0 END) AS OreOrdinarie,
+    SUM(CASE WHEN T.TipoOra <> 'Ordinaria' THEN T.OreLavorate ELSE 0 END) AS OreExtra
+FROM tabella_ore T
+JOIN dipendenti D
+    ON T.IDDip = D.IDDip
+GROUP BY
+    D.Nome
+ORDER BY
+    D.Nome
+
+#Calcolare rapporti in percentuale (es. Ore ordinarie e Ore extra)
+SELECT
+    D.Nome,
+    SUM(T.OreLavorate) AS OreTotali,
+    SUM(CASE WHEN T.TipoOra <> 'Ordinaria' THEN T.OreLavorate ELSE 0 END) AS OreExtra,
+    (SUM(CASE WHEN T.TipoOra <> 'Ordinaria' THEN T.OreLavorate ELSE 0 END) / SUM(T.OreLavorate)) * 100 AS PercentualeExtra
+FROM tabella_ore T
+JOIN dipendenti D
+    ON T.IDDip = D.IDDip
+GROUP BY
+    D.Nome,
+ORDER BY
+    PercentualeExtra DESC;
+
+#03_PROCEDURE
+
+#Chiamare ore totali anno e mese
+DELIMITER // 
+CREATE PROCEDURE GetOreMensiliOrdinarie( 
+IN anno_param INT, 
+IN mese_param INT 
+) 
+BEGIN 
+SELECT SUM(OreLavorate) AS OreTotali FROM tabella_ore WHERE YEAR(Mese) = anno_param AND MONTH(Mese) = mese_param AND TipoOra = 'Ordinaria'; 
+END // 
+DELIMITER ;
+1) CREARE TABELLE RELAZIONALI
+	Creare una tabella per i DIPENDENTI
+
+CREATE TABLE Dipendenti (
+    IDDip CHAR (3) PRIMARY KEY,
+    Nome VARCHAR (50) NOT NULL,
+    Sede CHAR (2) REFERENCES Sedi,
+    Ruolo VARCHAR (50)
+    );
