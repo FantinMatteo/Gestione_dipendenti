@@ -2,12 +2,12 @@
 
 ## IL PROGETTO ##
 
-Questo progetto affronta una sfida comune in ogni organizzazione: la gestione del tempo di lavoro. Se non accuratamente tracciato e analizzato, il 
-rendiconto delle ore lavorate può diventare un processo caotico che rende impossibile per un'azienda capire il proprio andamento, ottimizzare le 
-risorse e prendere decisioni informate.
-
-Questo progetto ha l'obiettivo di trasformare questo caos in un sistema strutturato. Ho sviluppato una soluzione completa per la rendicontazione 
-delle ore del personale che copre ogni fase, dalla gestione dei dati grezzi fino alla creazione di report analitici.
+Questo progetto affronta una sfida comune in ogni organizzazione: la #gestione del tempo di lavoro#.
+Se non accuratamente tracciato e analizzato, il rendiconto delle ore lavorate può diventare un processo caotico che rende impossibile per 
+un'organizzazione capire il proprio andamento, ottimizzare le risorse e prendere decisioni informate.
+L'obiettivo finale è trasformare questo caos in un sistema strutturato. 
+Per farlo, ho sviluppato una soluzione completa per la rendicontazione delle ore del personale che copre ogni fase, dalla gestione dei dati grezzi 
+fino alla creazione di report analitici.
 
 ## OBIETTIVI ##
 
